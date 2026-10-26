@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SQL &amp; Database Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F3EC;
+    --card: #FFFDF9;
+    --navy: #14213D;
+    --navy-2: #2B3A5C;
+    --teal: #2E7D78;
+    --teal-soft: #DCEDEA;
+    --teal-tint: #EEF6F4;
+    --grey: #E6E3DD;
+    --grey-2: #CFCBC3;
+    --muted: #5C6475;
+    --warn: #A94A35;
+    --warn-soft: #F6E4DE;
+    --code-bg: #14213D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body {
+    width: 2000px; height: 2000px; overflow: hidden;
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--navy);
+    font-size: 16px; line-height: 1.38;
+    padding: 40px 44px 36px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+
+  /* ---------- header ---------- */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 3px solid var(--navy); padding-bottom: 14px;
+  }
+  .title-block .eyebrow {
+    font-size: 14px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--teal);
+  }
+  h1 {
+    font-family: "Source Serif 4", Georgia, serif; font-weight: 700;
+    font-size: 58px; line-height: 1.02; letter-spacing: -.01em; margin-top: 4px;
+  }
+  .subtitle { font-size: 21px; color: var(--muted); margin-top: 6px; font-weight: 500; }
+  .legend { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .legend-row { display: flex; gap: 12px; align-items: center; font-size: 14.5px; color: var(--muted); }
+  .chip-stored, .chip-result {
+    font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 4px; white-space: nowrap;
+  }
+  .chip-stored { background: var(--navy); color: #fff; }
+  .chip-result { background: var(--teal-soft); color: var(--teal); border: 1.5px dashed var(--teal); }
+
+  /* ---------- grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; flex: 1; min-height: 0; }
+  .row-a, .row-b, .row-c { display: contents; }
+  section.card {
+    background: var(--card); border: 1px solid var(--grey); border-radius: 14px;
+    padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 11px;
+    position: relative; min-width: 0;
+  }
+  .s5 { grid-column: span 5; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; }
+  .s7 { grid-column: span 7; } .s12 { grid-column: span 12; } .s6 { grid-column: span 6; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; }
+  .num {
+    font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 14px;
+    color: #fff; background: var(--teal); border-radius: 6px; padding: 3px 8px; transform: translateY(-3px);
+  }
+  h2 { font-size: 23px; font-weight: 800; letter-spacing: -.01em; }
+  h2 small { font-weight: 500; color: var(--muted); font-size: 18px; }
+  p.lead { font-size: 15.5px; color: var(--navy-2); }
+  b.k { color: var(--teal); }
+
+  /* ---------- code ---------- */
+  pre.code {
+    background: var(--code-bg); color: #E8ECF3; border-radius: 9px;
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 14.5px; line-height: 1.5;
+    padding: 10px 14px; white-space: pre; overflow: hidden;
+  }
+  .kw { color: #7FD1C7; font-weight: 700; }
+  .fn { color: #F2C98B; }
+  .nu { color: #F0A58F; }
+  .cm { color: #8C97AD; }
+
+  /* ---------- tables ---------- */
+  .tbl-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .tbl-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--navy); letter-spacing: .04em; }
+  table { border-collapse: separate; border-spacing: 0; font-size: 14.5px; width: 100%; }
+  th, td { padding: 4px 9px; text-align: left; white-space: nowrap; }
+  td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
+  td { font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--grey); }
+  table.stored { border: 1.5px solid var(--navy); border-radius: 7px; overflow: hidden; background: #fff; }
+  table.stored th { background: var(--navy); color: #fff; font-weight: 600; font-size: 13.5px; }
+  table.result { border: 1.5px dashed var(--teal); border-radius: 7px; overflow: hidden; background: var(--teal-tint); }
+  table.result th { background: var(--teal-soft); color: var(--teal); font-weight: 700; font-size: 13.5px; }
+  tr:last-child td { border-bottom: none; }
+  th .pk, th .fk {
+    display: inline-block; font-size: 10.5px; font-weight: 800; padding: 1px 5px; border-radius: 3px; margin-left: 4px; letter-spacing: .05em;
+  }
+  th .pk { background: #F2C98B; color: var(--navy); }
+  th .fk { background: #7FD1C7; color: var(--navy); }
+  tr.hl td { background: var(--teal-soft); font-weight: 700; }
+  tr.out td { color: #A2A6AF; text-decoration: line-through; background: #F5F3EF; }
+  tr.new td { background: #E2F1EE; font-weight: 700; }
+  tr.del td { background: var(--warn-soft); color: var(--warn); text-decoration: line-through; font-weight: 600; }
+  td.null { color: var(--muted); font-style: italic; font-family: "JetBrains Mono", monospace; font-size: 13.5px; }
+  td .tag {
+    font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; text-decoration: none;
+    padding: 1px 6px; border-radius: 3px; margin-left: 6px; display: inline-block;
+  }
+  .tag.t { background: var(--teal); color: #fff; }
+  .tag.w { background: var(--warn); color: #fff; }
+  .tag.n { background: var(--navy); color: #fff; }
+  .chg { color: var(--teal); font-weight: 800; }
+
+  .flow { display: flex; align-items: center; gap: 10px; }
+  .flow > .tbl-wrap { flex: 1; }
+  .arrow {
+    flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    color: var(--teal); font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .arrow svg { width: 44px; height: 18px; }
+
+  .takeaway {
+    margin-top: auto;
+    background: var(--navy); color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 14.5px; line-height: 1.38;
+  }
+  .takeaway::before { content: "KEY TAKEAWAY  "; font-weight: 800; color: #7FD1C7; font-size: 12px; letter-spacing: .1em; }
+  .note { font-size: 14px; color: var(--navy-2); }
+  .note .x { color: var(--warn); font-weight: 800; }
+
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    font-size: 13.5px; padding: 4px 10px; border-radius: 999px; background: var(--grey); color: var(--navy);
+  }
+  .pill code { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--teal); }
+  code.i { font-family: "JetBrains Mono", monospace; font-size: .92em; background: var(--grey); padding: 0 5px; border-radius: 4px; color: var(--navy); }
+
+  /* ---------- PK / FK ---------- */
+  .pkfk { position: relative; display: flex; gap: 46px; align-items: flex-start; padding-top: 44px; }
+  .pkfk svg.rel { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .defs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .def { border-radius: 8px; padding: 8px 11px; font-size: 14.5px; }
+  .def.pk { background: #FBF0DD; border-left: 4px solid #E0A955; }
+  .def.fk { background: var(--teal-tint); border-left: 4px solid var(--teal); }
+  .def b { display: block; font-size: 13.5px; letter-spacing: .03em; }
+  .callout {
+    background: var(--teal-soft); border-radius: 8px; padding: 8px 12px; font-size: 14.5px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .callout .big { white-space: nowrap; font-size: 26px; font-weight: 800; color: var(--teal); line-height: 1; }
+
+  /* ---------- GROUP BY ---------- */
+  .groups { display: flex; flex-direction: column; gap: 6px; }
+  .grp {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 3px 10px;
+    border: 1.5px solid var(--grey-2); border-radius: 8px; padding: 5px 10px; background: #fff; font-size: 14.5px;
+  }
+  .grp .gid { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 700; color: var(--navy); }
+  .grp .rows { display: flex; gap: 5px; flex-wrap: wrap; }
+  .grp .rowchip { white-space: nowrap; font-size: 12.5px; background: var(--grey); border-radius: 4px; padding: 1px 6px; font-variant-numeric: tabular-nums; }
+  .grp .sum { grid-column: 1 / -1; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+  .grp .sum em { font-style: normal; color: var(--teal); font-weight: 800; }
+  .grp.g1 { border-color: var(--teal); }
+  .grp.out { opacity: .55; border-style: dashed; }
+
+  /* ---------- pipeline ---------- */
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+  .stage {
+    flex: 1; text-align: center; padding: 6px 2px; font-family: "JetBrains Mono", monospace; font-size: 12.5px; font-weight: 700;
+    background: var(--grey); color: var(--navy); position: relative; display: flex; flex-direction: column; justify-content: center;
+  }
+  .stage small { font-family: "Inter"; font-weight: 600; font-size: 11px; color: var(--muted); }
+  .stage.on { background: var(--teal); color: #fff; }
+  .stage.on small { color: #DDF2EF; }
+  .stage + .stage { margin-left: 14px; }
+  .stage + .stage::before {
+    content: ""; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+    border-left: 9px solid var(--grey-2); border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+  }
+  .stage:first-child { border-radius: 6px 0 0 6px; } .stage:last-child { border-radius: 0 6px 6px 0; }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .vs div { border-radius: 7px; padding: 6px 10px; font-size: 14px; background: var(--teal-tint); border: 1px solid var(--teal-soft); }
+  .vs div code { font-family: "JetBrains Mono", monospace; font-weight: 800; color: var(--teal); }
+
+  /* ---------- JOIN ---------- */
+  .joinkinds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .jk { border-radius: 8px; padding: 7px 10px; font-size: 14px; border: 1.5px solid var(--grey-2); background: #fff; display: flex; gap: 10px; align-items: center; }
+  .jk svg { flex: none; }
+  .jk b { display: block; font-family: "JetBrains Mono", monospace; font-size: 13.5px; }
+
+  /* ---------- DML ---------- */
+  .dml { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .dml-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .dml-col h3 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .dml-col h3 span { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .dml-col pre.code { font-size: 13.2px; padding: 9px 11px; }
+  .warning {
+    background: var(--warn-soft); border: 2px solid var(--warn); color: #6E2A1B; border-radius: 9px;
+    padding: 9px 14px; font-size: 15.5px; display: flex; gap: 12px; align-items: center;
+  }
+  .warning .ico { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--warn); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 19px; }
+
+  /* ---------- ACID ---------- */
+  .acid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .acid-card { border-radius: 9px; background: #fff; border: 1px solid var(--grey-2); padding: 8px 11px; display: flex; gap: 10px; align-items: flex-start; }
+  .acid-card .L {
+    flex: none; width: 38px; height: 38px; border-radius: 8px; background: var(--navy); color: #fff;
+    font-family: "Source Serif 4", Georgia, serif; font-weight: 700; font-size: 25px; display: grid; place-items: center;
+  }
+  .acid-card b { font-size: 15px; display: block; }
+  .acid-card span { font-size: 13.6px; color: var(--navy-2); line-height: 1.33; display: block; }
+  .tx { border: 1.5px solid var(--navy); border-radius: 9px; padding: 9px 12px; display: flex; flex-direction: column; gap: 7px; background: #fff; }
+  .tx-steps { display: flex; align-items: center; gap: 8px; }
+  .tx-step { padding: 5px 9px; border-radius: 6px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .tx-step.b { background: var(--grey); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .tx-step.d { background: var(--warn-soft); color: var(--warn); font-family: "JetBrains Mono", monospace; }
+  .tx-step.c { background: var(--teal-soft); color: var(--teal); font-family: "JetBrains Mono", monospace; }
+  .tx-step.ok { background: var(--teal); color: #fff; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .tx-arrow { color: var(--grey-2); font-weight: 800; }
+  .tx-fail { font-size: 13.8px; color: var(--navy-2); }
+  .tx-fail b { color: var(--warn); }
+
+  /* ---------- reminders ---------- */
+  .reminders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .rem { border-radius: 10px; padding: 12px 16px; background: #fff; border: 1px solid var(--grey-2); border-top: 5px solid var(--teal); display: flex; gap: 14px; }
+  .rem .ic { flex: none; width: 44px; height: 44px; border-radius: 10px; background: var(--teal-tint); display: grid; place-items: center; }
+  .rem h4 { font-size: 18px; font-weight: 800; margin-bottom: 3px; }
+  .rem p { font-size: 15px; color: var(--navy-2); line-height: 1.4; }
+  .rem code { font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 700; color: var(--teal); background: var(--teal-tint); padding: 0 4px; border-radius: 4px; }
+
+  footer { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <div class="eyebrow">Interview Revision Sheet · Java / Spring Boot Backend</div>
+    <h1>SQL &amp; Database Fundamentals</h1>
+    <div class="subtitle">Bank Audi Backend Developer Interview Study Sheet</div>
+  </div>
+  <div class="legend">
+    <div class="legend-row"><span class="chip-stored">Stored table</span> data persisted in the database</div>
+    <div class="legend-row"><span class="chip-result">Query result</span> rows returned by a query — stored data unchanged</div>
+  </div>
+</header>
+
+<div class="grid">
+
+  <!-- ============ 1. PK / FK ============ -->
+  <section class="card s5">
+    <div class="sec-head"><span class="num">01</span><h2>Primary Key &amp; Foreign Key</h2></div>
+    <div class="defs">
+      <div class="def pk"><b>PRIMARY KEY (PK)</b>Uniquely identifies each row in a table. No duplicates, no NULLs.</div>
+      <div class="def fk"><b>FOREIGN KEY (FK)</b>References a key in another table to establish a relationship.</div>
+    </div>
+    <div class="pkfk" id="pkfk">
+      <svg class="rel" id="relsvg"></svg>
+      <div class="tbl-wrap" style="flex: 0 0 auto;">
+        <div class="tbl-label" style="justify-content:flex-end"><span class="chip-stored">Customer</span></div>
+        <table class="stored">
+          <tr><th id="pk-h">customer_id<span class="pk">PK</span></th><th>name</th></tr>
+          <tr class="hl"><td class="r">1</td><td>Ali</td></tr>
+          <tr><td class="r">2</td><td>Sara</td></tr>
+          <tr><td class="r">3</td><td>Omar</td></tr>
+        </table>
+      </div>
+      <div class="tbl-wrap" style="flex: 1;">
+        <div class="tbl-label" style="justify-content:flex-end"><span class="chip-stored">Account</span></div>
+        <table class="stored">
+          <tr><th>account_id<span class="pk">PK</span></th><th id="fk-h">customer_id<span class="fk">FK</span></th><th class="r">balance</th></tr>
+          <tr class="hl"><td class="r">101</td><td class="r">1</td><td class="r">5,000</td></tr>
+          <tr class="hl"><td class="r">102</td><td class="r">1</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000</td></tr>
+          <tr><td class="r">104</td><td class="r">3</td><td class="r">800</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="callout"><span class="big">1 → 2</span><div><b>Ali owns two accounts.</b> Accounts 101 and 102 both store <code class="i">customer_id = 1</code>, so both reference Ali's row (one-to-many relationship).</div></div>
+  </section>
+
+  <!-- ============ 2. WHERE ============ -->
+  <section class="card s4">
+    <div class="sec-head"><span class="num">02</span><h2>WHERE <small>— filter rows</small></h2></div>
+<pre class="code"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> Account
+<span class="kw">WHERE</span> balance &gt; <span class="nu">1000</span>;</pre>
+    <div class="flow">
+      <div class="tbl-wrap">
+        <div class="tbl-label"><span class="chip-stored">Account</span></div>
+        <table class="stored">
+          <tr><th>account_id</th><th>customer_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">1</td><td class="r">5,000 ✓</td></tr>
+          <tr><td class="r">102</td><td class="r">1</td><td class="r">1,200 ✓</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000 ✓</td></tr>
+          <tr class="out"><td class="r">104</td><td class="r">3</td><td class="r">800 ✗</td></tr>
+        </table>
+      </div>
+      <div class="arrow"><svg viewBox="0 0 44 18"><path d="M2 9h36M31 3l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>filter</div>
+      <div class="tbl-wrap">
+        <div class="tbl-label"><span class="chip-result">Result</span></div>
+        <table class="result">
+          <tr><th>account_id</th><th>customer_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">1</td><td class="r">5,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="note"><span class="x">✗</span> Account <b>104</b> is excluded: its balance is <b>800</b>, and 800 &gt; 1000 is false. It is still in the stored table.</p>
+    <div class="takeaway">WHERE filters individual rows. It does not delete them from the stored table.</div>
+  </section>
+
+  <!-- ============ 3. ORDER BY ============ -->
+  <section class="card s3">
+    <div class="sec-head"><span class="num">03</span><h2>ORDER BY <small>— sort</small></h2></div>
+<pre class="code"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> Account
+<span class="kw">ORDER BY</span> balance <span class="kw">DESC</span>;</pre>
+    <div class="flow">
+      <div class="tbl-wrap">
+        <div class="tbl-label"><span class="chip-stored">Account</span></div>
+        <table class="stored">
+          <tr><th>account_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">5,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">3,000</td></tr>
+          <tr><td class="r">104</td><td class="r">800</td></tr>
+        </table>
+      </div>
+      <div class="arrow"><svg viewBox="0 0 44 18" style="width:30px"><path d="M2 9h22M18 3l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>sort</div>
+      <div class="tbl-wrap">
+        <div class="tbl-label"><span class="chip-result">Result</span></div>
+        <table class="result">
+          <tr><th>account_id</th><th class="r">balance ↓</th></tr>
+          <tr><td class="r">101</td><td class="r">5,000</td></tr>
+          <tr><td class="r">103</td><td class="r">3,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1,200</td></tr>
+          <tr><td class="r">104</td><td class="r">800</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pills" style="flex-direction: column; gap: 6px;">
+      <span class="pill"><code>DESC</code> = descending · highest → lowest</span>
+      <span class="pill"><code>ASC</code> = ascending · lowest → highest (default)</span>
+    </div>
+    <div class="takeaway">ORDER BY changes the result order, not the stored data.</div>
+  </section>
+
+  <!-- ============ 4. GROUP BY ============ -->
+  <section class="card s4">
+    <div class="sec-head"><span class="num">04</span><h2>GROUP BY <small>— group &amp; total</small></h2></div>
+<pre class="code"><span class="kw">SELECT</span> customer_id, <span class="fn">SUM</span>(balance) <span class="kw">AS</span> total_balance
+<span class="kw">FROM</span> Account
+<span class="kw">GROUP BY</span> customer_id;</pre>
+    <div class="flow" style="align-items: stretch;">
+      <div class="groups" style="flex: 1.5;">
+        <div class="grp g1"><span class="gid">customer 1</span><span class="rows"><span class="rowchip">101: 5,000</span><span class="rowchip">102: 1,200</span></span><span class="sum">5,000 + 1,200 = <em>6,200</em></span></div>
+        <div class="grp"><span class="gid">customer 2</span><span class="rows"><span class="rowchip">103: 3,000</span></span><span class="sum">3,000 = <em>3,000</em></span></div>
+        <div class="grp"><span class="gid">customer 3</span><span class="rows"><span class="rowchip">104: 800</span></span><span class="sum">800 = <em>800</em></span></div>
+      </div>
+      <div class="arrow"><svg viewBox="0 0 44 18" style="width:30px"><path d="M2 9h22M18 3l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>SUM</div>
+      <div class="tbl-wrap" style="flex: 0 0 auto;">
+        <div class="tbl-label"><span class="chip-result">Result</span></div>
+        <table class="result">
+          <tr><th>customer_id</th><th class="r">total_balance</th></tr>
+          <tr><td class="r">1</td><td class="r">6,200</td></tr>
+          <tr><td class="r">2</td><td class="r">3,000</td></tr>
+          <tr><td class="r">3</td><td class="r">800</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill"><code>COUNT()</code> counts rows</span>
+      <span class="pill"><code>AVG()</code> average</span>
+      <span class="pill"><code>MAX()</code> largest value</span>
+      <span class="pill"><code>MIN()</code> smallest value</span>
+    </div>
+    <p class="note">4 stored rows → 3 result rows (one per <code class="i">customer_id</code>). The Account table still holds all 4 rows: 101, 102, 103, 104.</p>
+    <div class="takeaway">GROUP BY creates one result per group. SUM calculates the total for each group. The original rows remain in the table.</div>
+  </section>
+
+  <!-- ============ 5. HAVING ============ -->
+  <section class="card s4">
+    <div class="sec-head"><span class="num">05</span><h2>HAVING <small>— filter groups</small></h2></div>
+<pre class="code"><span class="kw">SELECT</span> customer_id, <span class="fn">SUM</span>(balance) <span class="kw">AS</span> total_balance
+<span class="kw">FROM</span> Account
+<span class="kw">GROUP BY</span> customer_id
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(balance) &gt; <span class="nu">1000</span>;</pre>
+    <div class="flow">
+      <div class="groups" style="flex: 1;">
+        <div class="grp" style="grid-template-columns: 1fr auto; row-gap: 0;"><span class="gid">customer 1 · total 6,200</span><span class="sum" style="grid-column:auto"><em>✓ kept</em></span></div>
+        <div class="grp" style="grid-template-columns: 1fr auto; row-gap: 0;"><span class="gid">customer 2 · total 3,000</span><span class="sum" style="grid-column:auto"><em>✓ kept</em></span></div>
+        <div class="grp out" style="grid-template-columns: 1fr auto; row-gap: 0;"><span class="gid">customer 3 · total 800</span><span class="sum" style="grid-column:auto; color: var(--warn);">✗ removed</span></div>
+      </div>
+      <div class="arrow"><svg viewBox="0 0 44 18" style="width:30px"><path d="M2 9h22M18 3l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>having</div>
+      <div class="tbl-wrap" style="flex: 0 0 auto;">
+        <div class="tbl-label"><span class="chip-result">Result</span></div>
+        <table class="result">
+          <tr><th>customer_id</th><th class="r">total_balance</th></tr>
+          <tr><td class="r">1</td><td class="r">6,200</td></tr>
+          <tr><td class="r">2</td><td class="r">3,000</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="note"><span class="x">✗</span> Customer <b>3</b> is excluded: its total balance is only <b>800</b>.</p>
+    <div class="pipe">
+      <div class="stage">FROM<small>table</small></div>
+      <div class="stage on">WHERE<small>rows</small></div>
+      <div class="stage">GROUP BY<small>build groups</small></div>
+      <div class="stage on">HAVING<small>groups</small></div>
+      <div class="stage">SELECT<small>columns</small></div>
+      <div class="stage">ORDER BY<small>sort</small></div>
+    </div>
+    <div class="vs">
+      <div><code>WHERE</code> filters individual <b>rows before</b> grouping.</div>
+      <div><code>HAVING</code> filters <b>groups after</b> aggregation.</div>
+    </div>
+  </section>
+
+  <!-- ============ 6. JOIN ============ -->
+  <section class="card s4">
+    <div class="sec-head"><span class="num">06</span><h2>JOIN <small>— combine tables</small></h2></div>
+<pre class="code"><span class="kw">SELECT</span> c.name, a.account_id, a.balance
+<span class="kw">FROM</span> Customer c
+<span class="kw">INNER JOIN</span> Account a
+    <span class="kw">ON</span> c.customer_id = a.customer_id;</pre>
+    <div class="flow" style="align-items: flex-start; gap: 12px;">
+      <div class="tbl-wrap" style="flex: 0 0 auto;">
+        <div class="tbl-label"><span class="chip-stored">Customer</span></div>
+        <table class="stored">
+          <tr><th>customer_id</th><th>name</th></tr>
+          <tr><td class="r">1</td><td>Ali</td></tr>
+          <tr><td class="r">2</td><td>Sara</td></tr>
+          <tr><td class="r">3</td><td>Omar</td></tr>
+          <tr class="new"><td class="r">4</td><td>Maya <span class="tag n">no account</span></td></tr>
+        </table>
+      </div>
+      <div class="tbl-wrap" style="flex: 1;">
+        <div class="tbl-label"><span class="chip-result">Result</span></div>
+        <table class="result">
+          <tr><th>name</th><th class="r">account_id</th><th class="r">balance</th></tr>
+          <tr><td>Ali</td><td class="r">101</td><td class="r">5,000</td></tr>
+          <tr><td>Ali</td><td class="r">102</td><td class="r">1,200</td></tr>
+          <tr><td>Sara</td><td class="r">103</td><td class="r">3,000</td></tr>
+          <tr><td>Omar</td><td class="r">104</td><td class="r">800</td></tr>
+          <tr style="outline: 2px solid var(--navy); outline-offset: -2px;"><td>Maya <span class="tag n">LEFT only</span></td><td class="r null">NULL</td><td class="r null">NULL</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="joinkinds">
+      <div class="jk">
+        <svg width="46" height="30" viewBox="0 0 46 30"><circle cx="16" cy="15" r="12" fill="none" stroke="#14213D" stroke-width="1.8"/><circle cx="30" cy="15" r="12" fill="none" stroke="#14213D" stroke-width="1.8"/><path d="M23 5.2a12 12 0 0 1 0 19.6a12 12 0 0 1 0-19.6z" fill="#2E7D78"/></svg>
+        <div><b>INNER JOIN</b>Only matching rows → 4 rows. Maya is excluded: no matching account.</div>
+      </div>
+      <div class="jk">
+        <svg width="46" height="30" viewBox="0 0 46 30"><circle cx="16" cy="15" r="12" fill="#2E7D78" stroke="#14213D" stroke-width="1.8"/><circle cx="30" cy="15" r="12" fill="none" stroke="#14213D" stroke-width="1.8"/></svg>
+        <div><b>LEFT JOIN</b>All Customer rows → 5 rows. Maya kept with <code class="i">NULL</code> account columns.</div>
+      </div>
+    </div>
+    <div class="takeaway">INNER JOIN returns matching rows; LEFT JOIN preserves all rows from the left table.</div>
+  </section>
+
+  <!-- ============ 7. DML ============ -->
+  <section class="card s7">
+    <div class="sec-head"><span class="num">07</span><h2>INSERT · UPDATE · DELETE <small>— these change the stored table</small></h2></div>
+    <div class="dml">
+      <div class="dml-col">
+        <h3>INSERT <span>add a row</span></h3>
+<pre class="code"><span class="kw">INSERT INTO</span> Account
+  (account_id, customer_id, balance)
+<span class="kw">VALUES</span> (<span class="nu">105</span>, <span class="nu">2</span>, <span class="nu">1500</span>);</pre>
+        <table class="stored">
+          <tr><th>account_id</th><th>customer_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">1</td><td class="r">5,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000</td></tr>
+          <tr><td class="r">104</td><td class="r">3</td><td class="r">800</td></tr>
+          <tr class="new"><td class="r">105 <span class="tag t">new</span></td><td class="r">2</td><td class="r">1,500</td></tr>
+        </table>
+      </div>
+      <div class="dml-col">
+        <h3>UPDATE <span>modify a row</span></h3>
+<pre class="code"><span class="kw">UPDATE</span> Account
+<span class="kw">SET</span> balance = <span class="nu">1700</span>
+<span class="kw">WHERE</span> account_id = <span class="nu">105</span>;</pre>
+        <table class="stored">
+          <tr><th>account_id</th><th>customer_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">1</td><td class="r">5,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000</td></tr>
+          <tr><td class="r">104</td><td class="r">3</td><td class="r">800</td></tr>
+          <tr class="new"><td class="r">105</td><td class="r">2</td><td class="r"><s style="color:#8a8f99;font-weight:500">1,500</s> → <span class="chg">1,700</span></td></tr>
+        </table>
+      </div>
+      <div class="dml-col">
+        <h3>DELETE <span>remove a row</span></h3>
+<pre class="code"><span class="kw">DELETE FROM</span> Account
+<span class="kw">WHERE</span> account_id = <span class="nu">105</span>;</pre>
+        <table class="stored">
+          <tr><th>account_id</th><th>customer_id</th><th class="r">balance</th></tr>
+          <tr><td class="r">101</td><td class="r">1</td><td class="r">5,000</td></tr>
+          <tr><td class="r">102</td><td class="r">1</td><td class="r">1,200</td></tr>
+          <tr><td class="r">103</td><td class="r">2</td><td class="r">3,000</td></tr>
+          <tr><td class="r">104</td><td class="r">3</td><td class="r">800</td></tr>
+          <tr class="del"><td class="r">105 <span class="tag w">removed</span></td><td class="r">2</td><td class="r">1,700</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="warning"><span class="ico">!</span><div><b>Always check your WHERE clause.</b> An <code class="i">UPDATE</code> or <code class="i">DELETE</code> without <code class="i">WHERE</code> can affect every row in the table.</div></div>
+  </section>
+
+  <!-- ============ 8. ACID ============ -->
+  <section class="card s5">
+    <div class="sec-head"><span class="num">08</span><h2>ACID Transactions</h2></div>
+    <div class="acid">
+      <div class="acid-card"><span class="L">A</span><div><b>Atomicity</b><span>All participating database changes commit together or roll back together.</span></div></div>
+      <div class="acid-card"><span class="L">C</span><div><b>Consistency</b><span>A committed transaction preserves database integrity rules.</span></div></div>
+      <div class="acid-card"><span class="L">I</span><div><b>Isolation</b><span>Controls how concurrent transactions interact.</span></div></div>
+      <div class="acid-card"><span class="L">D</span><div><b>Durability</b><span>Committed changes are intended to survive failures according to database durability guarantees.</span></div></div>
+    </div>
+    <div class="tx">
+      <div class="tbl-label" style="letter-spacing:.08em;">BANK TRANSFER · ONE TRANSACTION</div>
+      <div class="tx-steps">
+        <span class="tx-step b">BEGIN</span><span class="tx-arrow">→</span>
+        <span class="tx-step d">Account A: -100 SAR</span><span class="tx-arrow">→</span>
+        <span class="tx-step c">Account B: +100 SAR</span><span class="tx-arrow">→</span>
+        <span class="tx-step ok">COMMIT</span>
+      </div>
+      <div class="tx-fail">The debit and credit should be handled as <b style="color:var(--navy)">one correctly designed database transaction</b>. If any step fails → <b>ROLLBACK</b>: neither change is kept, so money is never lost or created.</div>
+    </div>
+  </section>
+
+  <!-- ============ 9. Reminders ============ -->
+  <section class="card s12" style="padding: 14px 18px;">
+    <div class="sec-head"><span class="num">09</span><h2>Banking Database Reminders</h2></div>
+    <div class="reminders">
+      <div class="rem">
+        <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M15 16l2 2 3-4"/></svg></span>
+        <div><h4>Transactions</h4><p><code>@Transactional</code> groups participating database operations. It does not automatically roll back an external payment-provider operation.</p></div>
+      </div>
+      <div class="rem">
+        <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        <div><h4>Concurrency</h4><p>Use appropriate locking, atomic conditional updates, and database constraints to protect critical financial rules.</p></div>
+      </div>
+      <div class="rem">
+        <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M8 10.5h5M10.5 8v5"/></svg></span>
+        <div><h4>Indexes</h4><p>Indexes can improve suitable read queries but consume storage and add write overhead. Choose them based on query patterns and execution plans.</p></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>Sample schema: Customer(customer_id PK, name) · Account(account_id PK, customer_id FK → Customer, balance)</span>
+  <span>Logical query order: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</span>
+</footer>
+
+<script>
+  // Draw the FK → PK relationship arrow between the two table headers.
+  function drawRelation() {
+    const box = document.getElementById('pkfk').getBoundingClientRect();
+    const fk = document.getElementById('fk-h').getBoundingClientRect();
+    const pk = document.getElementById('pk-h').getBoundingClientRect();
+    const x1 = fk.left + 52 - box.left, y1 = fk.top - box.top - 22;
+    const x2 = pk.left + 48 - box.left, y2 = pk.top - box.top - 22;
+    const top = 10;
+    const svg = document.getElementById('relsvg');
+    svg.innerHTML = `
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0L10 5L0 10z" fill="#2E7D78"/></marker></defs>
+      <circle cx="${x1}" cy="${y1 + 20}" r="4" fill="#2E7D78"/>
+      <path d="M${x1} ${y1 + 20} V${top + 8} Q${x1} ${top} ${x1 - 8} ${top} H${x2 + 8} Q${x2} ${top} ${x2} ${top + 8} V${y2 + 18}"
+            fill="none" stroke="#2E7D78" stroke-width="2.6" marker-end="url(#ah)"/>
+      <rect x="${(x1 + x2) / 2 - 185}" y="${top - 12}" width="370" height="24" rx="12" fill="#FFFDF9"/>
+      <text x="${(x1 + x2) / 2}" y="${top + 5}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13.5" font-weight="700" fill="#2E7D78">Account.customer_id → Customer.customer_id</text>`;
+  }
+  document.fonts.ready.then(drawRelation);
+</script>
+</body>
+</html>
